@@ -1,7 +1,7 @@
 # telegram-entities-decoder
 
 This class decode style entities from Telegram bot messages (bold, italic, etc.) in text with inline entities that duplicate (when possible) the
-exact style the message has originally when was sended to the bot.
+exact style the message had originally when was sended to the bot.
 All this work is necessary because Telegram returns offset and length of the entities in UTF-16 code units that they've been hard to decode correctly in PHP 
 
 ## Compatibility
