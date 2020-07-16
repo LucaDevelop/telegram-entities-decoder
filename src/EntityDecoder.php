@@ -22,7 +22,6 @@ class EntityDecoder
     private $entities;
     private $style;
     private $baseRegex = '';
-	private $longest_emoji = 0;
 
      /**
      * @param string $style       Either 'HTML', 'Markdown' or 'MarkdownV2'.
@@ -117,49 +116,10 @@ class EntityDecoder
       $data = [];
       foreach($str_split_unicode as $s)
       {
-        if($this->is_single_emoji($s))  //If char is an emoji
-        {
-          $eLen = 0;
-          for($i=0; $i<mb_strlen($s); $i++) { //Cycle emoji elements
-            switch(strtoupper(dechex($this->uniord(mb_substr($s, $i, 1))))) //Code points conversion
-            {
-              case '200D':  //Zero-width joiner has length 1
-              {
-                $eLen += 1;
-                break;
-              }
-              case 'FE0F':  //Variation Selector has length 0
-              {
-                //Add 0 length
-                break;
-              }
-              default:  //Any other code point has length 2
-              {
-                $eLen += 2;
-                break;
-              }
-            }
-          }
-          $data[] = ["char" => $s, "length" => $eLen];
-        }
-        else
-        {
-          $data[] = ["char" => $s, "length" => mb_strlen($s)];
-        }
+         $data[] = ["char" => $s, "length" => $this->getUTF16CodePointsLength($s)];
       }
       
       return $data;
-    }
-
-    /**
-     * Code units convertion
-     */
-    protected function uniord($c) {
-        $ord0 = ord($c[0]); if ($ord0>=0   && $ord0<=127) return $ord0;
-        $ord1 = ord($c[1]); if ($ord0>=192 && $ord0<=223) return ($ord0-192)*64 + ($ord1-128);
-        $ord2 = ord($c[2]); if ($ord0>=224 && $ord0<=239) return ($ord0-224)*4096 + ($ord1-128)*64 + ($ord2-128);
-        $ord3 = ord($c[3]); if ($ord0>=240 && $ord0<=247) return ($ord0-240)*262144 + ($ord1-128)*4096 + ($ord2-128)*64 + ($ord3-128);
-        return false;
     }
 
     /**
@@ -574,47 +534,11 @@ class EntityDecoder
 	}
 
     /**
-     * Single emoji detection
+     * Count UTF-16 code units of the char passed
      */
-    protected function is_single_emoji($string) {
-      // If the string is longer than the longest emoji, it's not a single emoji
-      if(mb_strlen($string) >= $this->longest_emoji) return false;
-    
-      $all_emoji = $this->detect_emoji($string);
-    
-      $emoji = false;
-    
-      // If there are more than one or none, return false immediately
-      if(count($all_emoji) == 1) {
-        $emoji = $all_emoji[0];
-    
-        // Check if there are any other characters in the string
-    
-        // Remove the emoji found
-        $string = str_replace($emoji, '', $string);
-    
-        // If there are any characters left, then the string is not a single emoji
-        if(strlen($string) > 0)
-          $emoji = false;
-      }
-    
-      return $emoji;
-    }
-
-    /**
-     * Emoji detection with regexp
-     */
-    protected function detect_emoji($string) {
-
-        $data = array();
-
-        if(preg_match_all('/(?:' . $this->baseRegex. ')/u', $string, $matches)) {
-          foreach($matches[0] as $ch) {
-            $data[] = $ch;
-          }
-        }
-
-        return $data;
+    protected function getUTF16CodePointsLength($char) {
+        $chunks = str_split(bin2hex(mb_convert_encoding($char, 'UTF-16')), 4);
+        return count($chunks);
     }
     
     /**
@@ -655,8 +579,6 @@ class EntityDecoder
 		$regexp = '"';
 		foreach($basearr as $b)
 		{
-			if($this->longest_emoji == 0)
-				$this->longest_emoji = count($b);
 			$regexp .= '\\\\x{'.join('}\\\\x{', $b).'}|';
 		}
 		$regexp = substr($regexp, 0 ,strlen($regexp) - 1).'"';
