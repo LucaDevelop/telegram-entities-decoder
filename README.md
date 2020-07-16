@@ -26,7 +26,6 @@ $decoded_text = $entity_decoder->decode($message);
 ## Credits
 - Telegram docs: https://core.telegram.org/bots/api#formatting-options
 - Inspired By: https://github.com/php-telegram-bot/core/issues/544#issuecomment-564950430
-- Conversion to Unicode Code Points from: https://stackoverflow.com/questions/1805802/php-convert-unicode-codepoint-to-utf-8
 - Emoji detection (with some customizations) from: https://github.com/aaronpk/emoji-detector-php
 
 ## Contacts
