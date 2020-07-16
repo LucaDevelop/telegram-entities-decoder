@@ -5,7 +5,6 @@
  * All this work is necessary because Telegram returns offset and length of the entities in UTF-16 code units that they've been hard to decode correctly in PHP
  * 
  * Inspired By: https://github.com/php-telegram-bot/core/issues/544#issuecomment-564950430
- * Conversion to Unicode Code Points from: https://stackoverflow.com/questions/1805802/php-convert-unicode-codepoint-to-utf-8
  * Emoji detection (with some customizations) from: https://github.com/aaronpk/emoji-detector-php
  * 
  * Example usage:
