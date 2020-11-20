@@ -8,7 +8,7 @@
  * Emoji detection (with some customizations) from: https://github.com/aaronpk/emoji-detector-php
  * 
  * Example usage:
- * $entity_decoder = new EntityDecoder('HTML', 'API_KEY_STRING');
+ * $entity_decoder = new EntityDecoder('HTML');
  * $decoded_text = $entity_decoder->decode($message);
  * 
  * @author LucaDevelop
@@ -20,16 +20,13 @@ class EntityDecoder
 {
     private $entities;
     private $style;
-    private $baseRegex = '';
 
      /**
      * @param string $style       Either 'HTML', 'Markdown' or 'MarkdownV2'.
-     * @param string $api_key     API Key from https://emoji-api.com/. It's free and always up-to-date with Unicode Consortium.
      */
-    public function __construct(string $style = 'HTML', string $api_key = '')
+    public function __construct(string $style = 'HTML')
     {
         $this->style       = $style;
-        $this->baseRegex   = json_decode($this->GenerateRegEx($api_key));
     }
 
 	/**
@@ -110,15 +107,44 @@ class EntityDecoder
      */
     protected function splitCharAndLength($string)
     {
-      //Split with regexp because one emoji must be one char
-      $str_split_unicode = preg_split('/(' . $this->baseRegex . ')|(.)/us', $string, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
-      $data = [];
-      foreach($str_split_unicode as $s)
-      {
-         $data[] = ["char" => $s, "length" => $this->getUTF16CodePointsLength($s)];
-      }
-      
-      return $data;
+        //Split string in individual unicode points
+        $str_split_unicode = preg_split('//u', $string, null, PREG_SPLIT_NO_EMPTY);
+        $new_string_split = [];
+        $joiner = false;
+        for($i = 0; $i<count($str_split_unicode); $i++) //loop the array
+        {
+            $codepoint = bin2hex(mb_convert_encoding($str_split_unicode[$i], 'UTF-16'));    //Get the string rappresentation of the unicode char
+            if($codepoint == "fe0f" || $codepoint == "1f3fb" || $codepoint == "1f3fc" || $codepoint == "1f3fd" || $codepoint == "1f3fe" || $codepoint == "1f3ff")   //Manage the modifiers
+            {
+                $new_string_split[count($new_string_split) - 1] .= $str_split_unicode[$i];  //Apppend the modifier to the previous char
+            }
+            else
+            {
+                if($codepoint == "200d")    //Manage the Zero Width Joiner
+                {
+                    $new_string_split[count($new_string_split) - 1] .= $str_split_unicode[$i]; //Apppend the ZWJ to the previous char
+                    $joiner = true;
+                }
+                else
+                {
+                    if($joiner) //If previous one was a ZWJ
+                    {
+                        $new_string_split[count($new_string_split) - 1] .= $str_split_unicode[$i];  //Apppend to the previous char
+                        $joiner = false;
+                    }
+                    else
+                    {
+                        $new_string_split[] = $str_split_unicode[$i];   //New char
+                    }
+                }
+            }
+        }
+        $data = [];
+        foreach($new_string_split as $s)
+        {
+          $data[] = ["char" => $s, "length" => $this->getUTF16CodePointsLength($s)];
+        }
+        return $data;
     }
 
     /**
@@ -540,50 +566,6 @@ class EntityDecoder
         return count($chunks);
     }
     
-    /**
-     * Emoji regexp generation
-     */
-	protected function GenerateRegEx($api_key) {
-		$url = "https://emoji-api.com/emojis?access_key=".$api_key;
-		$ch = curl_init($url);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		$Output = curl_exec($ch);
-		curl_close($ch);
-		$basearr = [];
-		$obj = json_decode($Output, true);
-		foreach($obj as $o)
-		{
-			$chunks = str_split(bin2hex(mb_convert_encoding($o['character'], 'UTF-32')), 8);
-			$newchunks = [];
-			foreach($chunks as $chunk)
-			{
-				$newchunks[] = strtoupper(ltrim($chunk, '0'));
-			}
-			$basearr[] = $newchunks;
-			if(isset($o['variants']))
-			{
-				foreach($o['variants'] as $v)
-				{
-					$chunks = str_split(bin2hex(mb_convert_encoding($v['character'], 'UTF-32')), 8);
-					$newchunks = [];
-					foreach($chunks as $chunk)
-					{
-						$newchunks[] = strtoupper(ltrim($chunk, '0'));
-					}
-					$basearr[] = $newchunks;
-				}
-			}
-		}
-		usort($basearr, array(get_class(), 'cmpbase'));
-		$regexp = '"';
-		foreach($basearr as $b)
-		{
-			$regexp .= '\\\\x{'.join('}\\\\x{', $b).'}|';
-		}
-		$regexp = substr($regexp, 0 ,strlen($regexp) - 1).'"';
-		return $regexp;
-	}
-	
 	private static function cmpbase($a, $b)
 	{
 		return (count($a)<count($b) ? 1 : -1);

@@ -2,8 +2,6 @@
 
 include '../src/EntityDecoder.php';
 
-define ('API_KEY', 'STRING_API_KEY'); //API Key from https://emoji-api.com/
-
 $telegramUpdateExample = '
 {
     "update_id": 123456789,
@@ -46,7 +44,7 @@ $telegramUpdateExample = '
 
 $updateObj = json_decode($telegramUpdateExample);
 
-$entity_decoder = new EntityDecoder('HTML', API_KEY);
+$entity_decoder = new EntityDecoder('HTML');
 $decoded_text = $entity_decoder->decode($updateObj->message);
 
 echo $decoded_text;
