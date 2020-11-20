@@ -14,12 +14,12 @@ PHP >= 7.0
 
 ## TODOs
 1) Manage Exceptions and wrong inputs
-2) Find an easier way to calculate emoji length that not use a regexp or any other way that require to be updated from emoji DB.
+~~2) Find an easier way to calculate emoji length that not use a regexp or any other way that require to be updated from emoji DB.~~
 3) Right to left writing compatibility
 
 ## Example usage
 ```
-$entity_decoder = new EntityDecoder('HTML', 'API_KEY_STRING');
+$entity_decoder = new EntityDecoder('HTML');
 $decoded_text = $entity_decoder->decode($message);
 ```
 
