@@ -5,7 +5,6 @@
  * All this work is necessary because Telegram returns offset and length of the entities in UTF-16 code units that they've been hard to decode correctly in PHP
  * 
  * Inspired By: https://github.com/php-telegram-bot/core/issues/544#issuecomment-564950430
- * Emoji detection (with some customizations) from: https://github.com/aaronpk/emoji-detector-php
  * 
  * Example usage:
  * $entity_decoder = new EntityDecoder('HTML');
@@ -246,32 +245,37 @@ class EntityDecoder
 			{
 				case 'bold':
 				{
-					$startString .= '<b>';
+					$startString = '<b>';
 					break;
 				}
 				case 'italic':
 				{
-					$startString .= '<i>';
+					$startString = '<i>';
 					break;
 				}
 				case 'underline':
 				{
-					$startString .= '<u>';
+					$startString = '<u>';
 					break;
 				}
 				case 'strikethrough':
 				{
-					$startString .= '<s>';
+					$startString = '<s>';
 					break;
 				}
+                case 'spoiler':
+                {
+                    $startString = '<span class="tg-spoiler">';
+                    break;
+                }
 				case 'code':
 				{
-					$startString .= '<code>';
+					$startString = '<code>';
 					break;
 				}
 				case 'pre':
 				{
-					$startString .= '<pre>';
+					$startString = '<pre>';
 					if(isset($entity->language))
 					{
 						$startString .= '<code class="language-'.$entity->language.'">';
@@ -280,12 +284,12 @@ class EntityDecoder
 				}
 				case 'text_mention':
 				{
-					$startString .= '<a href="tg://user?id='.$entity->user->id.'">';
+					$startString = '<a href="tg://user?id='.$entity->user->id.'">';
 					break;
 				}
 				case 'text_link':
 				{
-					$startString .= '<a href="'.$entity->url.'">';
+					$startString = '<a href="'.$entity->url.'">';
 					break;
 				}
 			}
@@ -302,6 +306,11 @@ class EntityDecoder
                 case 'italic':
                 {
                     $startString = '_';
+                    break;
+                }
+                case 'spoiler':
+                {
+                    $startString = '||';
                     break;
                 }
                 case 'code':
@@ -353,7 +362,7 @@ class EntityDecoder
         {
             if($entity->offset == $pos)
             {
-				if(in_array($entity->type, array('bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline')))
+				if(in_array($entity->type, array('bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline', 'spoiler')))
                 {
                    $entities[] = $entity;
                 }
@@ -413,34 +422,39 @@ class EntityDecoder
 			{
 				case 'bold':
 				{
-					$stopString .= '</b>';
+					$stopString = '</b>';
 					break;
 				}
 				case 'italic':
 				{
-					$stopString .= '</i>';
+					$stopString = '</i>';
 					break;
 				}
 				case 'underline':
 				{
-					$stopString .= '</u>';
+					$stopString = '</u>';
 					break;
 				}
 				case 'strikethrough':
 				{
-					$stopString .= '</s>';
+					$stopString = '</s>';
 					break;
 				}
+                case 'spoiler':
+                {
+                    $stopString = '</span>';
+                    break;
+                }
 				case 'code':
 				{
-					$stopString .= '</code>';
+					$stopString = '</code>';
 					break;
 				}
 				case 'pre':
 				{
 					if(isset($entity->language))
 					{
-						$stopString .= '</code>';
+						$stopString = '</code>';
 					}
 					$stopString .= '</pre>';
 					break;
@@ -448,7 +462,7 @@ class EntityDecoder
 				case 'text_mention':
 				case 'text_link':
 				{
-					$stopString .= '</a>';
+					$stopString = '</a>';
 					break;
 				}
 			}
@@ -467,6 +481,11 @@ class EntityDecoder
                     $stopString = '_';
                     break;
                 }
+                case 'spoiler':
+                {
+                    $stopString = '||';
+                    break;
+                }
                 case 'code':
                 {
                     $stopString = '`';
@@ -479,12 +498,12 @@ class EntityDecoder
                 }
 				case 'underline':
 				{
-					$stopString .= '__';
+					$stopString = '__';
 					break;
 				}
 				case 'strikethrough':
 				{
-					$stopString .= '~';
+					$stopString = '~';
 					break;
 				}
                 case 'text_mention':
@@ -516,7 +535,7 @@ class EntityDecoder
         {
             if($entity->offset + $entity->length == $pos)
             {
-				if(in_array($entity->type, array('bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline')))
+				if(in_array($entity->type, array('bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline', 'spoiler')))
                 {
                     $entities[] = $entity;
                 }
@@ -565,10 +584,5 @@ class EntityDecoder
         $chunks = str_split(bin2hex(mb_convert_encoding($char, 'UTF-16')), 4);
         return count($chunks);
     }
-    
-	private static function cmpbase($a, $b)
-	{
-		return (count($a)<count($b) ? 1 : -1);
-	}
 }
 ?>
