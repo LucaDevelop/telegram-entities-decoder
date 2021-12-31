@@ -11,6 +11,7 @@ PHP >= 7.0
 - Supports all Telegram parse modes (Markdown, HTML and MarkdownV2). HTML has more entropy but it's easily the best and it's recommended.
 - Supports emoji in the text field
 - Easy to use
+
 NOTE: Markdown parse mode is deprecated and no longer up-to-date so it doesn't support all entities. Use MarkdownV2 or HTML.
 
 ## TODOs
