@@ -1,0 +1,20 @@
+{
+    "name": "lucadevelop/telegram-entities-decoder",
+    "description": "Telegram entities decoder in PHP",
+    "type": "library",
+    "require": {
+        "php": ">=7.0",
+        "ext-mbstring": "*"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "LucaDevelop",
+            "email": "lsirri.gm@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": { "": "src/" }
+    }
+}
