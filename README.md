@@ -12,6 +12,8 @@ PHP >= 7.0
 - Supports emoji in the text field
 - Easy to use
 
+NOTE: Markdown parse mode is deprecated and no longer up-to-date so it doesn't support all entities. Use MarkdownV2 or HTML.
+
 ## TODOs
 1) Manage Exceptions and wrong inputs
 2) ~~Find an easier way to calculate emoji length that not use a regexp or any other way that require to be updated from emoji DB.~~
