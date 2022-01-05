@@ -12,7 +12,7 @@ PHP >= 7.0
 - Supports emoji in the text field
 - Easy to use
 
-NOTE: Markdown parse mode is deprecated and no longer up-to-date so it doesn't support all entities. Use MarkdownV2 or HTML.
+_NOTE: Markdown parse mode is deprecated and no longer up-to-date so it doesn't support all entities. Use MarkdownV2 or HTML._
 
 ## TODOs
 1) Manage Exceptions and wrong inputs
@@ -21,6 +21,19 @@ NOTE: Markdown parse mode is deprecated and no longer up-to-date so it doesn't s
 
 ## Example usage
 ```
+$entity_decoder = new EntityDecoder('HTML');
+$decoded_text = $entity_decoder->decode($message);
+```
+_See demo folder for full example_
+
+## Composer
+```
+composer require lucadevelop/telegram-entities-decoder:dev-master
+```
+Usage:
+```
+require 'vendor/autoload.php';
+[...]
 $entity_decoder = new EntityDecoder('HTML');
 $decoded_text = $entity_decoder->decode($message);
 ```
