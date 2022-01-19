@@ -15,6 +15,8 @@
  * @see https://github.com/LucaDevelop/telegram-entities-decoder
  */
 
+namespace lucadevelop\TelegramEntitiesDecoder;
+
 class EntityDecoder
 {
     private $entities;
@@ -28,14 +30,14 @@ class EntityDecoder
         $this->style       = $style;
     }
 
-	/**
+    /**
      * Decode entities and return decoded text
      * 
-     * @param StdClass $message       Message object to reconstruct Entities from (json decoded without assoc).
+     * @param \StdClass $message       Message object to reconstruct Entities from (json decoded without assoc).
      */
-    public function decode(StdClass $message): string
+    public function decode(\StdClass $message): string
     {
-		$this->entities = $message->entities;
+        $this->entities = $message->entities;
         $prevencoding = mb_internal_encoding();
         mb_internal_encoding('UTF-8');
         if (empty($this->entities)) {
@@ -54,46 +56,46 @@ class EntityDecoder
             $entityCheckStop = $this->checkForEntityStop($offsetAndLength);
             if($entityCheckStart !== false)
             {
-				foreach($entityCheckStart as $stEntity)
-				{
-					$startChar = $this->getEntityStartString($stEntity);
-					$openedEntities[] = $stEntity;
-					$finalText .= $startChar;
-				}
+                foreach($entityCheckStart as $stEntity)
+                {
+                    $startChar = $this->getEntityStartString($stEntity);
+                    $openedEntities[] = $stEntity;
+                    $finalText .= $startChar;
+                }
                 $finalText .= $this->escapeSpecialChars($arrayText[$i]['char'], true, $openedEntities);
             }
             if($entityCheckStop !== false)
             {                
                 if($entityCheckStart === false)
                     $finalText .= $this->escapeSpecialChars($arrayText[$i]['char'], true, $openedEntities);
-				if($this->style == 'MarkdownV2' && $this->checkMarkdownV2AmbiguousEntities($entityCheckStop))
-				{
-					$stopChar = "_\r__";
-					$finalText .= $stopChar;
-					array_pop($openedEntities);
-					array_pop($openedEntities);
-				}
-				foreach($entityCheckStop as $stEntity)
-				{
-					$stopChar = $this->getEntityStopString($stEntity);
-					$finalText .= $stopChar;
-					array_pop($openedEntities);
-				}
+                if($this->style == 'MarkdownV2' && $this->checkMarkdownV2AmbiguousEntities($entityCheckStop))
+                {
+                    $stopChar = "_\r__";
+                    $finalText .= $stopChar;
+                    array_pop($openedEntities);
+                    array_pop($openedEntities);
+                }
+                foreach($entityCheckStop as $stEntity)
+                {
+                    $stopChar = $this->getEntityStopString($stEntity);
+                    $finalText .= $stopChar;
+                    array_pop($openedEntities);
+                }
             }
             if($entityCheckStart === false && $entityCheckStop === false)
             {
-				$isEntityOpen = count($openedEntities) > 0;
+                $isEntityOpen = count($openedEntities) > 0;
                 $finalText .= $this->escapeSpecialChars($arrayText[$i]['char'], $isEntityOpen, $openedEntities);
             }			
             $currenPosition = $offsetAndLength;
         }
         if(count($openedEntities) > 0)
         {
-			$openedEntities = array_reverse($openedEntities);
-			foreach($openedEntities as $oe)
-			{
-				$finalText .= $this->getEntityStopString($oe);
-			}
+            $openedEntities = array_reverse($openedEntities);
+            foreach($openedEntities as $oe)
+            {
+                $finalText .= $this->getEntityStopString($oe);
+            }
         }
         if($prevencoding)
             mb_internal_encoding($prevencoding);
@@ -107,7 +109,7 @@ class EntityDecoder
     protected function splitCharAndLength($string)
     {
         //Split string in individual unicode points
-        $str_split_unicode = preg_split('//u', $string, null, PREG_SPLIT_NO_EMPTY);
+        $str_split_unicode = preg_split('//u', $string, -1, PREG_SPLIT_NO_EMPTY);
         $new_string_split = [];
         $joiner = false;
         for($i = 0; $i<count($str_split_unicode); $i++) //loop the array
@@ -154,12 +156,12 @@ class EntityDecoder
         {			
             if($isEntityOpen)
             {
-				$entity = $entities[0];
+                $entity = $entities[0];
                 if($char == '*' || $char == '_')
                 {
                     if($char == $this->getEntityStartString($entity))
                     {
-						return $char."\\".$char.$char;
+                        return $char."\\".$char.$char;
                     }
                     else
                     {
@@ -242,57 +244,57 @@ class EntityDecoder
         else if($this->style == 'HTML')
         {
             switch($entity->type)
-			{
-				case 'bold':
-				{
-					$startString = '<b>';
-					break;
-				}
-				case 'italic':
-				{
-					$startString = '<i>';
-					break;
-				}
-				case 'underline':
-				{
-					$startString = '<u>';
-					break;
-				}
-				case 'strikethrough':
-				{
-					$startString = '<s>';
-					break;
-				}
+            {
+                case 'bold':
+                {
+                    $startString = '<b>';
+                    break;
+                }
+                case 'italic':
+                {
+                    $startString = '<i>';
+                    break;
+                }
+                case 'underline':
+                {
+                    $startString = '<u>';
+                    break;
+                }
+                case 'strikethrough':
+                {
+                    $startString = '<s>';
+                    break;
+                }
                 case 'spoiler':
                 {
                     $startString = '<span class="tg-spoiler">';
                     break;
                 }
-				case 'code':
-				{
-					$startString = '<code>';
-					break;
-				}
-				case 'pre':
-				{
-					$startString = '<pre>';
-					if(isset($entity->language))
-					{
-						$startString .= '<code class="language-'.$entity->language.'">';
-					}
-					break;
-				}
-				case 'text_mention':
-				{
-					$startString = '<a href="tg://user?id='.$entity->user->id.'">';
-					break;
-				}
-				case 'text_link':
-				{
-					$startString = '<a href="'.$entity->url.'">';
-					break;
-				}
-			}
+                case 'code':
+                {
+                    $startString = '<code>';
+                    break;
+                }
+                case 'pre':
+                {
+                    $startString = '<pre>';
+                    if(isset($entity->language))
+                    {
+                        $startString .= '<code class="language-'.$entity->language.'">';
+                    }
+                    break;
+                }
+                case 'text_mention':
+                {
+                    $startString = '<a href="tg://user?id='.$entity->user->id.'">';
+                    break;
+                }
+                case 'text_link':
+                {
+                    $startString = '<a href="'.$entity->url.'">';
+                    break;
+                }
+            }
         }
         else if($this->style == 'MarkdownV2')
         {
@@ -327,16 +329,16 @@ class EntityDecoder
                     }
                     break;
                 }
-				case 'underline':
-				{
-					$startString .= '__';
-					break;
-				}
-				case 'strikethrough':
-				{
-					$startString .= '~';
-					break;
-				}
+                case 'underline':
+                {
+                    $startString .= '__';
+                    break;
+                }
+                case 'strikethrough':
+                {
+                    $startString .= '~';
+                    break;
+                }
                 case 'text_mention':
                 case 'text_link':
                 {
@@ -357,21 +359,21 @@ class EntityDecoder
      */
     protected function checkForEntityStart($pos)
     {
-		$entities = [];
+        $entities = [];
         foreach($this->entities as $entity)
         {
             if($entity->offset == $pos)
             {
-				if(in_array($entity->type, array('bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline', 'spoiler')))
+                if(in_array($entity->type, array('bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline', 'spoiler')))
                 {
                    $entities[] = $entity;
                 }
             }
         }
-		if(count($entities) > 0)
-			return $entities;
-		else
-			return false;
+        if(count($entities) > 0)
+            return $entities;
+        else
+            return false;
     }
 
     /**
@@ -418,54 +420,54 @@ class EntityDecoder
         }
         else if($this->style == 'HTML')
         {
-			switch($entity->type)
-			{
-				case 'bold':
-				{
-					$stopString = '</b>';
-					break;
-				}
-				case 'italic':
-				{
-					$stopString = '</i>';
-					break;
-				}
-				case 'underline':
-				{
-					$stopString = '</u>';
-					break;
-				}
-				case 'strikethrough':
-				{
-					$stopString = '</s>';
-					break;
-				}
+            switch($entity->type)
+            {
+                case 'bold':
+                {
+                    $stopString = '</b>';
+                    break;
+                }
+                case 'italic':
+                {
+                    $stopString = '</i>';
+                    break;
+                }
+                case 'underline':
+                {
+                    $stopString = '</u>';
+                    break;
+                }
+                case 'strikethrough':
+                {
+                    $stopString = '</s>';
+                    break;
+                }
                 case 'spoiler':
                 {
                     $stopString = '</span>';
                     break;
                 }
-				case 'code':
-				{
-					$stopString = '</code>';
-					break;
-				}
-				case 'pre':
-				{
-					if(isset($entity->language))
-					{
-						$stopString = '</code>';
-					}
-					$stopString .= '</pre>';
-					break;
-				}
-				case 'text_mention':
-				case 'text_link':
-				{
-					$stopString = '</a>';
-					break;
-				}
-			}
+                case 'code':
+                {
+                    $stopString = '</code>';
+                    break;
+                }
+                case 'pre':
+                {
+                    if(isset($entity->language))
+                    {
+                        $stopString = '</code>';
+                    }
+                    $stopString .= '</pre>';
+                    break;
+                }
+                case 'text_mention':
+                case 'text_link':
+                {
+                    $stopString = '</a>';
+                    break;
+                }
+            }
         }
         else if($this->style == 'MarkdownV2')
         {
@@ -496,16 +498,16 @@ class EntityDecoder
                     $stopString = '```';
                     break;
                 }
-				case 'underline':
-				{
-					$stopString = '__';
-					break;
-				}
-				case 'strikethrough':
-				{
-					$stopString = '~';
-					break;
-				}
+                case 'underline':
+                {
+                    $stopString = '__';
+                    break;
+                }
+                case 'strikethrough':
+                {
+                    $stopString = '~';
+                    break;
+                }
                 case 'text_mention':
                 {
                     $stopString = '](tg://user?id='.$entity->user->id.')';
@@ -530,52 +532,52 @@ class EntityDecoder
      */
     protected function checkForEntityStop($pos)
     {
-		$entities = [];
+        $entities = [];
         foreach($this->entities as $entity)
         {
             if($entity->offset + $entity->length == $pos)
             {
-				if(in_array($entity->type, array('bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline', 'spoiler')))
+                if(in_array($entity->type, array('bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline', 'spoiler')))
                 {
                     $entities[] = $entity;
                 }
             }
         }
-		if(count($entities) > 0)
-			return array_reverse($entities);
-		else
-			return false;
+        if(count($entities) > 0)
+            return array_reverse($entities);
+        else
+            return false;
     }
     
     /**
      * Check for ambiguous entities in MarkdownV2 style (see Telegram docs)
      */
-	protected function checkMarkdownV2AmbiguousEntities(&$entitiesToCheck)
-	{
-		$result = false;
-		$newEntities = [];
-		$foundIndex = 0;
-		foreach($entitiesToCheck as $ec)
-		{
-			if($ec->type == 'italic' || $ec->type == 'underline')
-			{
-				$foundIndex++;
-			}
-		}
-		if($foundIndex == 2)
-		{
-			$result = true;
-			foreach($entitiesToCheck as $ec)
-			{
-				if($ec->type != 'italic' && $ec->type != 'underline')
-				{
-					$newEntities[] = $ec;
-				}
-			}
-			$entitiesToCheck = $newEntities;
-		}
-		return $result;
-	}
+    protected function checkMarkdownV2AmbiguousEntities(&$entitiesToCheck)
+    {
+        $result = false;
+        $newEntities = [];
+        $foundIndex = 0;
+        foreach($entitiesToCheck as $ec)
+        {
+            if($ec->type == 'italic' || $ec->type == 'underline')
+            {
+                $foundIndex++;
+            }
+        }
+        if($foundIndex == 2)
+        {
+            $result = true;
+            foreach($entitiesToCheck as $ec)
+            {
+                if($ec->type != 'italic' && $ec->type != 'underline')
+                {
+                    $newEntities[] = $ec;
+                }
+            }
+            $entitiesToCheck = $newEntities;
+        }
+        return $result;
+    }
 
     /**
      * Count UTF-16 code units of the char passed

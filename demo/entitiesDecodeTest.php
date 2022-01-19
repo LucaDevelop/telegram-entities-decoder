@@ -2,6 +2,8 @@
 
 include '../src/EntityDecoder.php';
 
+use lucadevelop\TelegramEntitiesDecoder\EntityDecoder;
+
 $telegramUpdateExample = '
 {
     "update_id": 123456789,

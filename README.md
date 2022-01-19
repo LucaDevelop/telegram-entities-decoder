@@ -33,6 +33,7 @@ composer require lucadevelop/telegram-entities-decoder:dev-master
 Usage:
 ```
 require 'vendor/autoload.php';
+use lucadevelop\TelegramEntitiesDecoder\EntityDecoder;
 [...]
 $entity_decoder = new EntityDecoder('HTML');
 $decoded_text = $entity_decoder->decode($message);
