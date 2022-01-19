@@ -37,10 +37,10 @@ class EntityDecoder
      */
     public function decode(\StdClass $message): string
     {
-        //Get available enities (for text or for attachment like photo, document, etc.)
+        //Get available entities (for text or for attachment like photo, document, etc.)
         if(!empty($message->entities))
             $this->entities = $message->entities;
-        if(!empty($this->caption_entities))
+        if(!empty($message->caption_entities))
             $this->entities = $message->caption_entities;
         //Get internal encoding
         $prevencoding = mb_internal_encoding();
