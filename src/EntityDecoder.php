@@ -19,7 +19,7 @@ namespace lucadevelop\TelegramEntitiesDecoder;
 
 class EntityDecoder
 {
-    private $entities;
+    private $entities = false;
     private $style;
 
      /**
@@ -37,14 +37,25 @@ class EntityDecoder
      */
     public function decode(\StdClass $message): string
     {
-        $this->entities = $message->entities;
+        //Get available enities (for text or for attachment like photo, document, etc.)
+        if(!empty($message->entities))
+            $this->entities = $message->entities;
+        if(!empty($this->caption_entities))
+            $this->entities = $message->caption_entities;
+        //Get internal encoding
         $prevencoding = mb_internal_encoding();
+        //Set encoding to UTF-8
         mb_internal_encoding('UTF-8');
-        if (empty($this->entities)) {
-            return $message->text;
+        //Get available text (text message or caption for attachment)
+        $textToDecode = (!empty($message->text) ? $message->text : (!empty($message->caption) ? $message->caption : ""));
+        //if the message has no entities or no text return the original text
+        if (empty($this->entities) || $textToDecode == "") {
+            if($prevencoding)
+                mb_internal_encoding($prevencoding);
+            return $textToDecode;
         }
         //split text in char array with UTF-16 code units length
-        $arrayText = $this->splitCharAndLength($message->text);
+        $arrayText = $this->splitCharAndLength($textToDecode);
         $finalText = "";
 
         $openedEntities = [];
