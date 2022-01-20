@@ -68,7 +68,7 @@ class EntityDecoder
         $openedEntities = [];
         $currenPosition = 0;
         //Cycle characters one by one to calculate begins and ends of entities and escape special chars
-        for($i = 0; $i < count($arrayText); $i++) {
+        for($i = 0, $c = count($arrayText); $i < $c; $i++) {
             $offsetAndLength = $currenPosition + $arrayText[$i]['length'];
             $entityCheckStart = $this->checkForEntityStart($currenPosition);
             $entityCheckStop = $this->checkForEntityStop($offsetAndLength);
@@ -130,7 +130,7 @@ class EntityDecoder
         $str_split_unicode = preg_split('//u', $string, -1, PREG_SPLIT_NO_EMPTY);
         $new_string_split = [];
         $joiner = false;
-        for($i = 0; $i<count($str_split_unicode); $i++) //loop the array
+        for($i = 0, $c = count($str_split_unicode); $i<$c; $i++) //loop the array
         {
             $codepoint = bin2hex(mb_convert_encoding($str_split_unicode[$i], 'UTF-16'));    //Get the string rappresentation of the unicode char
             if($codepoint == "fe0f" || $codepoint == "1f3fb" || $codepoint == "1f3fc" || $codepoint == "1f3fd" || $codepoint == "1f3fe" || $codepoint == "1f3ff")   //Manage the modifiers
