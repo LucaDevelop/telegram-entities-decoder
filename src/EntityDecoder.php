@@ -17,6 +17,8 @@
 
 namespace lucadevelop\TelegramEntitiesDecoder;
 
+use Exception;
+
 class EntityDecoder
 {
     private $entities = false;
@@ -33,10 +35,15 @@ class EntityDecoder
     /**
      * Decode entities and return decoded text
      * 
-     * @param \StdClass $message       Message object to reconstruct Entities from (json decoded without assoc).
+     * @param $message       Message object to reconstruct Entities from (json decoded without assoc).
+     * @return string
      */
-    public function decode(\StdClass $message): string
+    public function decode($message): string
     {
+        if(!is_object($message))
+        {
+            throw new Exception('message must be an object');
+        }
         //Get available entities (for text or for attachment like photo, document, etc.)
         if(!empty($message->entities))
             $this->entities = $message->entities;
