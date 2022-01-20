@@ -24,9 +24,9 @@ class EntityDecoder
     private $entities = false;
     private $style;
 
-     /**
-     * @param string $style       Either 'HTML', 'Markdown' or 'MarkdownV2'.
-     */
+      /**
+      * @param string $style       Either 'HTML', 'Markdown' or 'MarkdownV2'.
+      */
     public function __construct(string $style = 'HTML')
     {
         $this->style = $style;
@@ -118,7 +118,7 @@ class EntityDecoder
         if (count($openedEntities) > 0)
         {
             $openedEntities = array_reverse($openedEntities);
-            foreach($openedEntities as $oe)
+            foreach ($openedEntities as $oe)
             {
                 $finalText .= $this->getEntityStopString($oe);
             }
@@ -140,30 +140,33 @@ class EntityDecoder
         $str_split_unicode = preg_split('//u', $string, -1, PREG_SPLIT_NO_EMPTY);
         $new_string_split = [];
         $joiner = false;
-        for ($i = 0, $c = count($str_split_unicode); $i<$c; $i++) //loop the array
+        for ($i = 0, $c = count($str_split_unicode); $i < $c; $i++) //loop the array
         {
-            $codepoint = bin2hex(mb_convert_encoding($str_split_unicode[$i], 'UTF-16'));    //Get the string rappresentation of the unicode char
-            if ($codepoint == "fe0f" || $codepoint == "1f3fb" || $codepoint == "1f3fc" || $codepoint == "1f3fd" || $codepoint == "1f3fe" || $codepoint == "1f3ff")   //Manage the modifiers
+            $codepoint = bin2hex(mb_convert_encoding($str_split_unicode[$i], 'UTF-16')); //Get the string rappresentation of the unicode char
+            if ($codepoint == "fe0f" || $codepoint == "1f3fb" || $codepoint == "1f3fc" || $codepoint == "1f3fd" || $codepoint == "1f3fe" || $codepoint == "1f3ff")
             {
-                $new_string_split[count($new_string_split) - 1] .= $str_split_unicode[$i];  //Apppend the modifier to the previous char
+                //Manage the modifiers
+                $new_string_split[count($new_string_split) - 1] .= $str_split_unicode[$i]; //Apppend the modifier to the previous char
             }
             else
             {
-                if ($codepoint == "200d")    //Manage the Zero Width Joiner
+                if ($codepoint == "200d")
                 {
+                    //Manage the Zero Width Joiner
                     $new_string_split[count($new_string_split) - 1] .= $str_split_unicode[$i]; //Apppend the ZWJ to the previous char
                     $joiner = true;
                 }
                 else
                 {
-                    if ($joiner) //If previous one was a ZWJ
+                    if ($joiner)
                     {
-                        $new_string_split[count($new_string_split) - 1] .= $str_split_unicode[$i];  //Apppend to the previous char
+                        //If previous one was a ZWJ
+                        $new_string_split[count($new_string_split) - 1] .= $str_split_unicode[$i]; //Apppend to the previous char
                         $joiner = false;
                     }
                     else
                     {
-                        $new_string_split[] = $str_split_unicode[$i];   //New char
+                        $new_string_split[] = $str_split_unicode[$i]; //New char
                     }
                 }
             }
@@ -394,7 +397,7 @@ class EntityDecoder
             {
                 if (in_array($entity->type, array('bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline', 'spoiler')))
                 {
-                   $entities[] = $entity;
+                    $entities[] = $entity;
                 }
             }
         }
