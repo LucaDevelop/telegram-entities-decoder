@@ -21,12 +21,12 @@ use Exception;
 
 class EntityDecoder
 {
-    private $entities = false;
+    private $entities = [];
     private $style;
 
       /**
-      * @param string $style       Either 'HTML', 'Markdown' or 'MarkdownV2'.
-      */
+       * @param string $style       Either 'HTML', 'Markdown' or 'MarkdownV2'.
+       */
     public function __construct(string $style = 'HTML')
     {
         $this->style = $style;
@@ -35,7 +35,7 @@ class EntityDecoder
     /**
      * Decode entities and return decoded text
      * 
-     * @param $message       Message object to reconstruct Entities from (json decoded without assoc).
+     * @param $message       message object to reconstruct Entities from (json decoded without assoc).
      * @return string
      */
     public function decode($message): string
@@ -89,7 +89,7 @@ class EntityDecoder
                 $finalText .= $this->escapeSpecialChars($arrayText[$i]['char'], true, $openedEntities);
             }
             if ($entityCheckStop !== false)
-            {                
+            {
                 if ($entityCheckStart === false)
                 {
                     $finalText .= $this->escapeSpecialChars($arrayText[$i]['char'], true, $openedEntities);
@@ -110,12 +110,12 @@ class EntityDecoder
             }
             if ($entityCheckStart === false && $entityCheckStop === false)
             {
-                $isEntityOpen = count($openedEntities) > 0;
+                $isEntityOpen = !empty($openedEntities);
                 $finalText .= $this->escapeSpecialChars($arrayText[$i]['char'], $isEntityOpen, $openedEntities);
-            }			
+            }
             $currenPosition = $offsetAndLength;
         }
-        if (count($openedEntities) > 0)
+        if (!empty($openedEntities))
         {
             $openedEntities = array_reverse($openedEntities);
             foreach ($openedEntities as $oe)
@@ -140,8 +140,9 @@ class EntityDecoder
         $str_split_unicode = preg_split('//u', $string, -1, PREG_SPLIT_NO_EMPTY);
         $new_string_split = [];
         $joiner = false;
-        for ($i = 0, $c = count($str_split_unicode); $i < $c; $i++) //loop the array
+        for ($i = 0, $c = count($str_split_unicode); $i < $c; $i++)
         {
+            //loop the array
             $codepoint = bin2hex(mb_convert_encoding($str_split_unicode[$i], 'UTF-16')); //Get the string rappresentation of the unicode char
             if ($codepoint == "fe0f" || $codepoint == "1f3fb" || $codepoint == "1f3fc" || $codepoint == "1f3fd" || $codepoint == "1f3fe" || $codepoint == "1f3ff")
             {
@@ -184,7 +185,7 @@ class EntityDecoder
      */
     protected function escapeSpecialChars($char, $isEntityOpen, $entities) {
         if ($this->style == 'Markdown')
-        {			
+        {
             if ($isEntityOpen)
             {
                 $entity = $entities[0];
@@ -380,7 +381,7 @@ class EntityDecoder
         }
         else
         {
-            //Exception
+            throw new Exception("Wrong style name");
         }
         return $startString;
     }
@@ -553,7 +554,7 @@ class EntityDecoder
         }
         else
         {
-            //Exception
+            throw new Exception("Wrong style name");
         }
         return $stopString;
     }
@@ -618,4 +619,3 @@ class EntityDecoder
         return count($chunks);
     }
 }
-?>
