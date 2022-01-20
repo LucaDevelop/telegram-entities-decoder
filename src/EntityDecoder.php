@@ -402,10 +402,11 @@ class EntityDecoder
                 }
             }
         }
-        if (count($entities) > 0)
+        if (!empty($entities)) {
             return $entities;
-        else
+        } else {
             return false;
+        }
     }
 
     /**
@@ -575,10 +576,11 @@ class EntityDecoder
                 }
             }
         }
-        if (count($entities) > 0)
+        if (!empty($entities)) {
             return array_reverse($entities);
-        else
+        } else {
             return false;
+        }
     }
     
     /**
