@@ -1,4 +1,5 @@
 # telegram-entities-decoder
+[![Build Status](https://scrutinizer-ci.com/g/LucaDevelop/telegram-entities-decoder/badges/build.png?b=master)](https://scrutinizer-ci.com/g/LucaDevelop/telegram-entities-decoder/build-status/master) [![Latest Stable Version](http://poser.pugx.org/lucadevelop/telegram-entities-decoder/v)](https://packagist.org/packages/lucadevelop/telegram-entities-decoder) [![Total Downloads](http://poser.pugx.org/lucadevelop/telegram-entities-decoder/downloads)](https://packagist.org/packages/lucadevelop/telegram-entities-decoder) [![Latest Unstable Version](http://poser.pugx.org/lucadevelop/telegram-entities-decoder/v/unstable)](https://packagist.org/packages/lucadevelop/telegram-entities-decoder) [![License](http://poser.pugx.org/lucadevelop/telegram-entities-decoder/license)](https://packagist.org/packages/lucadevelop/telegram-entities-decoder) [![PHP Version Require](http://poser.pugx.org/lucadevelop/telegram-entities-decoder/require/php)](https://packagist.org/packages/lucadevelop/telegram-entities-decoder)
 
 This class decode style entities from Telegram bot messages (bold, italic, etc.) in text with inline entities that duplicate (when possible) the
 exact style the message had originally when was sended to the bot.
@@ -8,6 +9,7 @@ All this work is necessary because Telegram returns offset and length of the ent
 PHP >= 7.0
 
 ## Features
+- Decode entities from text messages and attachments caption.
 - Supports all Telegram parse modes (Markdown, HTML and MarkdownV2). HTML has more entropy but it's easily the best and it's recommended.
 - Supports emoji in the text field
 - Easy to use
@@ -28,7 +30,7 @@ _See demo folder for full example_
 
 ## Composer
 ```
-composer require lucadevelop/telegram-entities-decoder:dev-master
+composer require lucadevelop/telegram-entities-decoder
 ```
 Usage:
 ```
