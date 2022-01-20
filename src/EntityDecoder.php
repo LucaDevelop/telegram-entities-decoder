@@ -35,7 +35,7 @@ class EntityDecoder
     /**
      * Decode entities and return decoded text
      * 
-     * @param $message       message object to reconstruct Entities from (json decoded without assoc).
+     * @param object $message       message object to reconstruct Entities from (json decoded without assoc).
      * @return string
      */
     public function decode($message): string
