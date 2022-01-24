@@ -49,7 +49,7 @@ class EntityDecoder
     {
         if (!is_object($message))
         {
-            throw new Exception('message must be an object');
+            throw new \Exception('message must be an object');
         }
         //Get available entities (for text or for attachment like photo, document, etc.)
         if (!empty($message->entities))
