@@ -31,7 +31,7 @@ class EntityDecoder
        */
     public function __construct(string $style = 'HTML')
     {
-        if(in_array($style, ["HTML", "MarkdownV2", "Markdown"]))
+        if (in_array($style, ["HTML", "MarkdownV2", "Markdown"]))
         {
             $this->style = $style;
         }
