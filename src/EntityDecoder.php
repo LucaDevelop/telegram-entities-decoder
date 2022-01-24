@@ -17,8 +17,6 @@
 
 namespace lucadevelop\TelegramEntitiesDecoder;
 
-use Exception;
-
 class EntityDecoder
 {
     private $entities = [];
