@@ -26,10 +26,19 @@ class EntityDecoder
 
       /**
        * @param string $style       Either 'HTML', 'Markdown' or 'MarkdownV2'.
+       * 
+       * @throws InvalidArgumentException if the provided style name in invalid.
        */
     public function __construct(string $style = 'HTML')
     {
-        $this->style = $style;
+        if(in_array($style, ["HTML", "MarkdownV2", "Markdown"]))
+        {
+            $this->style = $style;
+        }
+        else
+        {
+            throw new \InvalidArgumentException("Wrong style name");
+        }
     }
 
     /**
@@ -379,10 +388,6 @@ class EntityDecoder
                 }
             }
         }
-        else
-        {
-            throw new Exception("Wrong style name");
-        }
         return $startString;
     }
 
@@ -552,10 +557,6 @@ class EntityDecoder
                     break;
                 }
             }
-        }
-        else
-        {
-            throw new Exception("Wrong style name");
         }
         return $stopString;
     }
