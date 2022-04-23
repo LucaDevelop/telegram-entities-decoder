@@ -1,6 +1,8 @@
 # telegram-entities-decoder
 [![Build Status](https://scrutinizer-ci.com/g/LucaDevelop/telegram-entities-decoder/badges/build.png?b=master)](https://scrutinizer-ci.com/g/LucaDevelop/telegram-entities-decoder/build-status/master) [![Latest Stable Version](https://img.shields.io/github/v/release/lucadevelop/telegram-entities-decoder?display_name=tag&label=stable)](https://packagist.org/packages/lucadevelop/telegram-entities-decoder) [![Total Downloads](http://poser.pugx.org/lucadevelop/telegram-entities-decoder/downloads)](https://packagist.org/packages/lucadevelop/telegram-entities-decoder) [![Latest Unstable Version](http://poser.pugx.org/lucadevelop/telegram-entities-decoder/v/unstable)](https://packagist.org/packages/lucadevelop/telegram-entities-decoder) [![License](http://poser.pugx.org/lucadevelop/telegram-entities-decoder/license)](https://packagist.org/packages/lucadevelop/telegram-entities-decoder) [![PHP Version Require](http://poser.pugx.org/lucadevelop/telegram-entities-decoder/require/php)](https://packagist.org/packages/lucadevelop/telegram-entities-decoder)
 
+![EntityDecoder](https://user-images.githubusercontent.com/68305127/164949030-622a200e-8c18-4480-b8e2-08476801bb90.PNG)
+
 This class decode style entities from Telegram bot messages (bold, italic, etc.) in text with inline entities that duplicate (when possible) the
 exact style the message had originally when was sended to the bot.
 All this work is necessary because Telegram returns offset and length of the entities in UTF-16 code units that they've been hard to decode correctly in PHP 
