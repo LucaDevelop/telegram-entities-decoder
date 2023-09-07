@@ -65,7 +65,9 @@ class EntityDecoder
         //Set encoding to UTF-8
         mb_internal_encoding('UTF-8');
         //Get available text (text message or caption for attachment)
-        $textToDecode = (!empty($message->text) ? $message->text : (!empty($message->caption) ? $message->caption : ""));
+        $messageText = $message->text;
+        $messageCaption = $message->caption;
+        $textToDecode = (!empty($messageText) ? $messageText : (!empty($messageCaption) ? $messageCaption : ""));
         //if the message has no entities or no text return the original text
         if (empty($this->entities) || $textToDecode == "") {
             if ($prevencoding)
