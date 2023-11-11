@@ -1,15 +1,15 @@
 <?php
-/** 
+/**
  * This class decode style entities from Telegram bot messages (bold, italic, etc.) in text with inline entities that duplicate (when possible) the
  * exact style the message has originally when was sended to the bot.
  * All this work is necessary because Telegram returns offset and length of the entities in UTF-16 code units that they've been hard to decode correctly in PHP
- * 
+ *
  * Inspired By: https://github.com/php-telegram-bot/core/issues/544#issuecomment-564950430
- * 
+ *
  * Example usage:
  * $entity_decoder = new EntityDecoder('HTML');
  * $decoded_text = $entity_decoder->decode($message);
- * 
+ *
  * @author LucaDevelop
  * @access public
  * @see https://github.com/LucaDevelop/telegram-entities-decoder
@@ -24,7 +24,7 @@ class EntityDecoder
 
       /**
        * @param string $style       Either 'HTML', 'Markdown' or 'MarkdownV2'.
-       * 
+       *
        * @throws InvalidArgumentException if the provided style name in invalid.
        */
     public function __construct(string $style = 'HTML')
@@ -41,7 +41,7 @@ class EntityDecoder
 
     /**
      * Decode entities and return decoded text
-     * 
+     *
      * @param object $message       message object to reconstruct Entities from (json decoded without assoc).
      * @return string
      */
@@ -333,6 +333,11 @@ class EntityDecoder
                     $startString = '<a href="'.$entity->url.'">';
                     break;
                 }
+                case 'custom_emoji':
+                {
+                    $startString = '<tg-emoji emoji-id="'.$entity->custom_emoji_id.'">';
+                    break;
+                }
             }
         }
         else if ($this->style == 'MarkdownV2')
@@ -384,6 +389,11 @@ class EntityDecoder
                     $startString = '[';
                     break;
                 }
+                case 'custom_emoji':
+                {
+                    $startString = '![';
+                    break;
+                }
             }
         }
         return $startString;
@@ -399,7 +409,7 @@ class EntityDecoder
         {
             if ($entity->offset == $pos)
             {
-                if (in_array($entity->type, array('bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline', 'spoiler')))
+                if (in_array($entity->type, array('bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline', 'spoiler', 'custom_emoji')))
                 {
                     $entities[] = $entity;
                 }
@@ -503,6 +513,11 @@ class EntityDecoder
                     $stopString = '</a>';
                     break;
                 }
+                case 'custom_emoji':
+                {
+                    $stopString = '</tg-emoji>';
+                    break;
+                }
             }
         }
         else if ($this->style == 'MarkdownV2')
@@ -554,6 +569,11 @@ class EntityDecoder
                     $stopString = ']('.$entity->url.')';
                     break;
                 }
+                case 'custom_emoji':
+                {
+                    $stopString = '](tg://emoji?id='.$entity->custom_emoji_id.')';
+                    break;
+                }
             }
         }
         return $stopString;
@@ -569,7 +589,7 @@ class EntityDecoder
         {
             if ($entity->offset + $entity->length == $pos)
             {
-                if (in_array($entity->type, array('bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline', 'spoiler')))
+                if (in_array($entity->type, array('bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline', 'spoiler', 'custom_emoji')))
                 {
                     $entities[] = $entity;
                 }
@@ -581,7 +601,7 @@ class EntityDecoder
             return false;
         }
     }
-    
+
     /**
      * Check for ambiguous entities in MarkdownV2 style (see Telegram docs)
      */
