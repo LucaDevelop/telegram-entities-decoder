@@ -19,6 +19,7 @@ namespace lucadevelop\TelegramEntitiesDecoder;
 
 class EntityDecoder
 {
+    private $entitiesToParse = ['bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline', 'spoiler', 'blockquote', 'custom_emoji'];
     private $entities = [];
     private $style;
 
@@ -230,7 +231,21 @@ class EntityDecoder
         }
         else if ($this->style == 'MarkdownV2')
         {
-            return (in_array($char, array('_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!', '\\')) ? '\\'.$char : $char);
+            $isBlockquoteOpen = false;
+            foreach ($entities as $entity) {
+                if ($entity->type === 'blockquote') {
+                    $isBlockquoteOpen = true;
+                    break;
+                }
+            }
+            if($isBlockquoteOpen && $char == "\n")
+            {
+                return $char.'>';
+            }
+            else
+            {
+                return (in_array($char, ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!', '\\']) ? '\\'.$char : $char);
+            }
         }
         else
         {
@@ -338,6 +353,11 @@ class EntityDecoder
                     $startString = '<tg-emoji emoji-id="'.$entity->custom_emoji_id.'">';
                     break;
                 }
+                case 'blockquote':
+                {
+                    $startString = '<blockquote>';
+                    break;
+                }
             }
         }
         else if ($this->style == 'MarkdownV2')
@@ -394,6 +414,11 @@ class EntityDecoder
                     $startString = '![';
                     break;
                 }
+                case 'blockquote':
+                {
+                    $startString = '>';
+                    break;
+                }
             }
         }
         return $startString;
@@ -409,7 +434,7 @@ class EntityDecoder
         {
             if ($entity->offset == $pos)
             {
-                if (in_array($entity->type, array('bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline', 'spoiler', 'custom_emoji')))
+                if (in_array($entity->type, $this->entitiesToParse))
                 {
                     $entities[] = $entity;
                 }
@@ -518,6 +543,11 @@ class EntityDecoder
                     $stopString = '</tg-emoji>';
                     break;
                 }
+                case 'blockquote':
+                {
+                    $stopString = '</blockquote>';
+                    break;
+                }
             }
         }
         else if ($this->style == 'MarkdownV2')
@@ -589,7 +619,7 @@ class EntityDecoder
         {
             if ($entity->offset + $entity->length == $pos)
             {
-                if (in_array($entity->type, array('bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline', 'spoiler', 'custom_emoji')))
+                if (in_array($entity->type, $this->entitiesToParse))
                 {
                     $entities[] = $entity;
                 }
