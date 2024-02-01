@@ -41,7 +41,6 @@ $decoded_text = $entity_decoder->decode($message);
 ## Credits
 - Telegram docs: https://core.telegram.org/bots/api#formatting-options
 - Inspired By: https://github.com/php-telegram-bot/core/issues/544#issuecomment-564950430
-- ~~Emoji detection (with some customizations) from: https://github.com/aaronpk/emoji-detector-php~~
 
 ## Contacts
 ![Telegram](https://telegram.org/favicon.ico) [@LucaDevelop](https://t.me/LucaDevelop)
