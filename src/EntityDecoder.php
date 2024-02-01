@@ -285,6 +285,7 @@ class EntityDecoder
                     {
                         $startString .= $entity->language;
                     }
+                    $startString .= "\n";
                     break;
                 }
                 case 'text_mention':
@@ -391,6 +392,7 @@ class EntityDecoder
                     {
                         $startString .= $entity->language;
                     }
+                    $startString .= "\n";
                     break;
                 }
                 case 'underline':
@@ -474,7 +476,7 @@ class EntityDecoder
                 }
                 case 'pre':
                 {
-                    $stopString = '```';
+                    $stopString = "\n".'```';
                     break;
                 }
                 case 'text_mention':
@@ -576,7 +578,7 @@ class EntityDecoder
                 }
                 case 'pre':
                 {
-                    $stopString = '```';
+                    $stopString = "\n".'```';
                     break;
                 }
                 case 'underline':
