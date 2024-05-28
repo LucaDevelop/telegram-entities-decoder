@@ -140,6 +140,118 @@ class EntityDecoder
     }
 
     /**
+     * Extract all entities in an array
+     *
+     * @param object $message       message object to reconstruct Entities from (json decoded without assoc).
+     * @return array
+     */
+    public function extractAllEntities($message): array
+    {
+        $entitiesArray = [];
+        if (!is_object($message))
+        {
+            throw new \Exception('message must be an object');
+        }
+        //Get available entities (for text or for attachment like photo, document, etc.)
+        if (!empty($message->entities))
+        {
+            $this->entities = $message->entities;
+        }
+        if (!empty($message->caption_entities))
+        {
+            $this->entities = $message->caption_entities;
+        }
+        //Get internal encoding
+        $prevencoding = mb_internal_encoding();
+        //Set encoding to UTF-8
+        mb_internal_encoding('UTF-8');
+        //Get available text (text message or caption for attachment)
+        $textToDecode = (!empty($message->text) ? $message->text : (!empty($message->caption) ? $message->caption : ""));
+        //if the message has no entities or no text return the empty array
+        if (empty($this->entities) || $textToDecode == "") {
+            if ($prevencoding)
+            {
+                mb_internal_encoding($prevencoding);
+            }
+            return $entitiesArray;
+        }
+        $arrayText = $this->splitCharAndLength($textToDecode);
+        $entitytext = "";
+
+        $openedEntities = [];
+        $currenPosition = 0;
+        //Cycle characters one by one to calculate begins and ends of entities and escape special chars
+        for ($i = 0, $c = count($arrayText); $i < $c; $i++) {
+            $offsetAndLength = $currenPosition + $arrayText[$i]['length'];
+            $entityCheckStart = $this->checkForEntityStart($currenPosition);
+            $entityCheckStop = $this->checkForEntityStop($offsetAndLength);
+            if ($entityCheckStart !== false)
+            {
+                foreach ($entityCheckStart as $stEntity)
+                {
+                    $startChar = $this->getEntityStartString($stEntity);
+                    $openedEntities[] = $stEntity;
+                    $entitytext .= $startChar;
+                }
+                $entitytext .= $this->escapeSpecialChars($arrayText[$i]['char'], true, $openedEntities);
+            }
+            if ($entityCheckStop !== false)
+            {
+                if ($entityCheckStart === false)
+                {
+                    $entitytext .= $this->escapeSpecialChars($arrayText[$i]['char'], true, $openedEntities);
+                }
+                if ($this->style == 'MarkdownV2' && $this->checkMarkdownV2AmbiguousEntities($entityCheckStop))
+                {
+                    $stopChar = "_\r__";
+                    $entitytext .= $stopChar;
+                    array_pop($openedEntities);
+                    array_pop($openedEntities);
+                    if(empty($openedEntities))
+                    {
+                        $entitiesArray[] = $entitytext;
+                        $entitytext = "";
+                    }
+                }
+                foreach ($entityCheckStop as $stEntity)
+                {
+                    $stopChar = $this->getEntityStopString($stEntity);
+                    $entitytext .= $stopChar;
+                    array_pop($openedEntities);
+                    if(empty($openedEntities))
+                    {
+                        $entitiesArray[] = $entitytext;
+                        $entitytext = "";
+                    }
+                }
+            }
+            if ($entityCheckStart === false && $entityCheckStop === false)
+            {
+                $isEntityOpen = !empty($openedEntities);
+                if($isEntityOpen)
+                {
+                    $entitytext .= $this->escapeSpecialChars($arrayText[$i]['char'], $isEntityOpen, $openedEntities);
+                }
+            }
+            $currenPosition = $offsetAndLength;
+        }
+        if (!empty($openedEntities))
+        {
+            $openedEntities = array_reverse($openedEntities);
+            foreach ($openedEntities as $oe)
+            {
+                $entitytext .= $this->getEntityStopString($oe);
+                $entitiesArray[] = $entitytext;
+            }
+        }
+        if ($prevencoding)
+        {
+            mb_internal_encoding($prevencoding);
+        }
+        return $entitiesArray;
+    }
+
+    /**
      * Split message text in chars array with lengthes
      */
     protected function splitCharAndLength($string)
