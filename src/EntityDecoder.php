@@ -19,7 +19,7 @@ namespace lucadevelop\TelegramEntitiesDecoder;
 
 class EntityDecoder
 {
-    private $entitiesToParse = ['bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline', 'spoiler', 'blockquote', 'custom_emoji'];
+    private $entitiesToParse = ['bold', 'italic', 'code', 'pre', 'text_mention', 'text_link', 'strikethrough', 'underline', 'spoiler', 'blockquote', 'expandable_blockquote', 'custom_emoji', 'date_time'];
     private $entities = [];
     private $style;
 
@@ -61,6 +61,10 @@ class EntityDecoder
         {
             $this->entities = $message->caption_entities;
         }
+        if(empty($this->entities) && empty($message->caption_entities))
+        {
+            $this->entities = [];
+        }
         //Get internal encoding
         $prevencoding = mb_internal_encoding();
         //Set encoding to UTF-8
@@ -78,7 +82,7 @@ class EntityDecoder
         //split text in char array with UTF-16 code units length
         $arrayText = $this->splitCharAndLength($textToDecode);
         $finalText = "";
-
+        $lastBlackquoteClosingPosition = false; //Var to manage the case of a second blockquote entity starts immediately after a blockquote entity closed (see Telegram docs for MarkdownV2 format options)
         $openedEntities = [];
         $currenPosition = 0;
         //Cycle characters one by one to calculate begins and ends of entities and escape special chars
@@ -90,7 +94,16 @@ class EntityDecoder
             {
                 foreach ($entityCheckStart as $stEntity)
                 {
-                    $startChar = $this->getEntityStartString($stEntity);
+                    $blockquoteJustClosed = false;
+                    if($stEntity->type === 'blockquote' || $stEntity->type === 'expandable_blockquote')
+                    {
+                        if($lastBlackquoteClosingPosition !== false && $lastBlackquoteClosingPosition == $stEntity->offset - 1)
+                        {
+                            $blockquoteJustClosed = true;
+                            $lastBlackquoteClosingPosition = false;
+                        }
+                    }
+                    $startChar = $this->getEntityStartString($stEntity, $blockquoteJustClosed);
                     $openedEntities[] = $stEntity;
                     $finalText .= $startChar;
                 }
@@ -102,12 +115,22 @@ class EntityDecoder
                 {
                     $finalText .= $this->escapeSpecialChars($arrayText[$i]['char'], true, $openedEntities);
                 }
-                if ($this->style == 'MarkdownV2' && $this->checkMarkdownV2AmbiguousEntities($entityCheckStop))
+                if ($this->style == 'MarkdownV2')
                 {
-                    $stopChar = "_\r__";
-                    $finalText .= $stopChar;
-                    array_pop($openedEntities);
-                    array_pop($openedEntities);
+                    if($this->checkMarkdownV2AmbiguousEntities($entityCheckStop))
+                    {
+                        $stopChar = "_**__";
+                        $finalText .= $stopChar;
+                        array_pop($openedEntities);
+                        array_pop($openedEntities);
+                    }
+                    foreach ($entityCheckStop as $stEntity)
+                    {
+                        if($stEntity->type === 'blockquote' || $stEntity->type === 'expandable_blockquote')
+                        {
+                            $lastBlackquoteClosingPosition = $stEntity->offset + $stEntity->length;
+                        }
+                    }
                 }
                 foreach ($entityCheckStop as $stEntity)
                 {
@@ -161,6 +184,10 @@ class EntityDecoder
         {
             $this->entities = $message->caption_entities;
         }
+        if(empty($this->entities) && empty($message->caption_entities))
+        {
+            $this->entities = [];
+        }
         //Get internal encoding
         $prevencoding = mb_internal_encoding();
         //Set encoding to UTF-8
@@ -177,7 +204,7 @@ class EntityDecoder
         }
         $arrayText = $this->splitCharAndLength($textToDecode);
         $entitytext = "";
-
+        $lastBlackquoteClosingPosition = false; //Var to manage the case of a second blockquote entity starts immediately after a blockquote entity closed (see Telegram docs for MarkdownV2 format options)
         $openedEntities = [];
         $currenPosition = 0;
         //Cycle characters one by one to calculate begins and ends of entities and escape special chars
@@ -189,7 +216,16 @@ class EntityDecoder
             {
                 foreach ($entityCheckStart as $stEntity)
                 {
-                    $startChar = $this->getEntityStartString($stEntity);
+                    $blockquoteJustClosed = false;
+                    if($stEntity->type === 'blockquote' || $stEntity->type === 'expandable_blockquote')
+                    {
+                        if($lastBlackquoteClosingPosition !== false && $lastBlackquoteClosingPosition == $stEntity->offset - 1)
+                        {
+                            $blockquoteJustClosed = true;
+                            $lastBlackquoteClosingPosition = false;
+                        }
+                    }
+                    $startChar = $this->getEntityStartString($stEntity, $blockquoteJustClosed);
                     $openedEntities[] = $stEntity;
                     $entitytext .= $startChar;
                 }
@@ -201,16 +237,26 @@ class EntityDecoder
                 {
                     $entitytext .= $this->escapeSpecialChars($arrayText[$i]['char'], true, $openedEntities);
                 }
-                if ($this->style == 'MarkdownV2' && $this->checkMarkdownV2AmbiguousEntities($entityCheckStop))
+                if ($this->style == 'MarkdownV2')
                 {
-                    $stopChar = "_\r__";
-                    $entitytext .= $stopChar;
-                    array_pop($openedEntities);
-                    array_pop($openedEntities);
-                    if(empty($openedEntities))
+                    if($this->checkMarkdownV2AmbiguousEntities($entityCheckStop))
                     {
-                        $entitiesArray[] = $entitytext;
-                        $entitytext = "";
+                        $stopChar = "_**__";
+                        $entitytext .= $stopChar;
+                        array_pop($openedEntities);
+                        array_pop($openedEntities);
+                        if(empty($openedEntities))
+                        {
+                            $entitiesArray[] = $entitytext;
+                            $entitytext = "";
+                        }
+                    }
+                    foreach ($entityCheckStop as $stEntity)
+                    {
+                        if($stEntity->type === 'blockquote' || $stEntity->type === 'expandable_blockquote')
+                        {
+                            $lastBlackquoteClosingPosition = $stEntity->offset + $stEntity->length;
+                        }
                     }
                 }
                 foreach ($entityCheckStop as $stEntity)
@@ -345,7 +391,7 @@ class EntityDecoder
         {
             $isBlockquoteOpen = false;
             foreach ($entities as $entity) {
-                if ($entity->type === 'blockquote') {
+                if ($entity->type === 'blockquote' || $entity->type === 'expandable_blockquote') {
                     $isBlockquoteOpen = true;
                     break;
                 }
@@ -366,9 +412,9 @@ class EntityDecoder
     }
 
     /**
-     * Get the begin string of the entity  for the choosen style
+     * Get the begin string of the entity for the choosen style
      */
-    protected function getEntityStartString($entity)
+    protected function getEntityStartString($entity, $isBlockquoteJustClosed = false)
     {
         $startString = '';
         if ($this->style == 'Markdown')
@@ -471,6 +517,16 @@ class EntityDecoder
                     $startString = '<blockquote>';
                     break;
                 }
+                case 'expandable_blockquote':
+                {
+                    $startString = '<blockquote expandable>';
+                    break;
+                }
+                case 'date_time':
+                {
+                    $startString = '<tg-time unix="'.$entity->unix_time.'"'.(!empty($entity->date_time_format) ? ' format="'.$entity->date_time_format.'"' : '' ).'>';
+                    break;
+                }
             }
         }
         else if ($this->style == 'MarkdownV2')
@@ -529,8 +585,14 @@ class EntityDecoder
                     break;
                 }
                 case 'blockquote':
+                case 'expandable_blockquote':
                 {
-                    $startString = '>';
+                    $startString = ($isBlockquoteJustClosed ? "**" : "").'>';
+                    break;
+                }
+                case 'date_time':
+                {
+                    $startString = '![';
                     break;
                 }
             }
@@ -658,8 +720,14 @@ class EntityDecoder
                     break;
                 }
                 case 'blockquote':
+                case 'expandable_blockquote':
                 {
                     $stopString = '</blockquote>';
+                    break;
+                }
+                case 'date_time':
+                {
+                    $stopString = '</tg-time>';
                     break;
                 }
             }
@@ -713,9 +781,24 @@ class EntityDecoder
                     $stopString = ']('.$entity->url.')';
                     break;
                 }
+                case 'blockquote':
+                {
+                    $stopString = "\n";
+                    break;
+                }
+                case 'expandable_blockquote':
+                {
+                    $stopString = "||\n";
+                    break;
+                }
                 case 'custom_emoji':
                 {
                     $stopString = '](tg://emoji?id='.$entity->custom_emoji_id.')';
+                    break;
+                }
+                case 'date_time':
+                {
+                    $stopString = '](tg://time?unix='.$entity->unix_time.(!empty($entity->date_time_format) ? '&format='.$entity->date_time_format : '' ).')';
                     break;
                 }
             }
